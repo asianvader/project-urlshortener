@@ -1,22 +1,22 @@
 'use strict';
 
-const secret = require('dotenv').config();
+require('dotenv').config();
 
-var express = require('express');
-var mongo = require('mongodb');
-var mongoose = require('mongoose');
+const express = require('express');
+const mongo = require('mongodb');
+const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 
-var cors = require('cors');
+const cors = require('cors');
 
-var app = express();
-var router = express.Router();
+const app = express();
+const router = express.Router();
 
 // Basic Configuration 
-var port = process.env.PORT || 3000;
+const port = process.env.PORT || 3000;
 
 /** this project needs a db !! **/ 
-mongoose.connect(process.env.MONGOLAB_URI, {useNewUrlParser: true});
+const dbConn = mongoose.connect(process.env.MONGOLAB_URI, {useNewUrlParser: true});
 // console.log(process.env.MONGOLAB_URI);
 
 app.use(cors());
@@ -36,5 +36,12 @@ app.get("/api/hello", function (req, res) {
   res.json({greeting: 'hello API'});
 });
 
+
+app.post("/api/shorturl/new", function (req, res) {
+  const url = req.body.url;
+  console.log(req.body);
+  console.log(url);
+  res.json({original_url: url});
+});
 
 app.listen(port);
