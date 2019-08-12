@@ -42,33 +42,43 @@ app.get('/', function(req, res){
 
 });
 
-// get url from form and save to Mongo
+// POST => get url from form
 app.post("/api/shorturl/new", (req, res) => {
   let original_url = req.body.url;
 
-  let dnsUrlCheck = original_url.replace(/^https?:\/\//, "");
+  // check to see if url is a valid domain
+  if (/^https?:\/\/www./.test(original_url)) {
+    let dnsUrlCheck = original_url.replace(/^https?:\/\//, "");
   
-  dns.lookup(dnsUrlCheck, (err, value) => {
-    if (err) {
-      console.log(err);
-      return;
-    }
-    console.log(value);
-  })
-
-  let longUrl = new Url({
-    original_url: original_url,
-    short_url: 5
-  });
-  longUrl
-    .save()
-    .then(result => {  
-      console.log('added to mongo'); 
+    dns.lookup(dnsUrlCheck, (err, value) => {
+      // Not a valid domain:
+      if (err) {
+        res.json({error: "invalid URL"});
+        console.log(err);
+        return;
+      }
+      // a valid domain
+      console.log(value);
+      let longUrl = new Url({
+        original_url: original_url,
+        short_url: 5
+      });
+      longUrl
+        .save()
+        .then(result => {  
+          console.log('added to mongo'); 
+        })
+        .catch(err => {
+          console.log(err);
+        }); 
+      res.json({original_url: original_url});
     })
-    .catch(err => {
-      console.log(err);
-    }); 
-  res.json({original_url: original_url});
+  } else {
+    res.json({error: "invalid URL"});
+  }
+  
+
+ 
 });
 
 app.listen(port);
