@@ -6,8 +6,8 @@ const express = require('express');
 const mongo = require('mongodb');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-
 const cors = require('cors');
+const dns = require('dns');
 
 const app = express();
 const router = express.Router();
@@ -19,7 +19,6 @@ const port = process.env.PORT || 3000;
 mongoose.connect(process.env.MONGOLAB_URI, {useNewUrlParser: true}, function(error){
   console.log(error);
 })
-
 
 //create schema for MongoDB
 const Schema = mongoose.Schema;
@@ -43,16 +42,20 @@ app.get('/', function(req, res){
 
 });
 
-
-
-app.get("/api/hello", function (req, res) {
-  res.json({greeting: 'hello API'});
-});
-
-// get url from form
+// get url from form and save to Mongo
 app.post("/api/shorturl/new", (req, res) => {
   let original_url = req.body.url;
-  console.log(original_url);
+
+  let dnsUrlCheck = original_url.replace(/^https?:\/\//, "");
+  
+  dns.lookup(dnsUrlCheck, (err, value) => {
+    if (err) {
+      console.log(err);
+      return;
+    }
+    console.log(value);
+  })
+
   let longUrl = new Url({
     original_url: original_url,
     short_url: 5
@@ -60,12 +63,10 @@ app.post("/api/shorturl/new", (req, res) => {
   longUrl
     .save()
     .then(result => {  
-      // res.json(result);
-    console.log('added to mongo'); 
+      console.log('added to mongo'); 
     })
     .catch(err => {
       console.log(err);
-      res.json({"error": err})
     }); 
   res.json({original_url: original_url});
 });
