@@ -17,8 +17,10 @@ const port = process.env.PORT || 3000;
 
 /** this project needs a db !! **/ 
 mongoose.connect(process.env.MONGOLAB_URI, {useNewUrlParser: true}, function(error){
+  if (error) {
   console.log(error);
-})
+  }
+});
 
 //create schema for MongoDB
 const Schema = mongoose.Schema;
@@ -46,11 +48,15 @@ app.get('/', function(req, res){
 app.post("/api/shorturl/new", (req, res) => {
   let original_url = req.body.url;
 
-  // check to see if url is a valid domain
+  // check to see if url starts with http(s)://www.
   if (/^https?:\/\/www./.test(original_url)) {
-    let dnsUrlCheck = original_url.replace(/^https?:\/\//, "");
+
+    // if true check to see if url is a valid domain
+    // let dnsUrlCheck = original_url.replace(/^https?:\/\//, "");
+    let dnsUrlCheck = new URL(original_url);
+    console.log(dnsUrlCheck.hostname);
   
-    dns.lookup(dnsUrlCheck, (err, value) => {
+    dns.lookup(dnsUrlCheck.hostname, (err, value) => {
       // Not a valid domain:
       if (err) {
         res.json({error: "invalid URL"});
