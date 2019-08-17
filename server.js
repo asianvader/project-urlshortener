@@ -71,9 +71,7 @@ app.post("/api/shorturl/new", (req, res) => {
       let checkIfUrlExists = Url.findOne({'original_url': originalUrl}, (err, data) => {
         // if doc exists in db
         if (data) {
-          console.log(data);
           res.json({
-            document: "exists",
             original_url: data.original_url,
             short_url: data.short_url
           });
@@ -82,41 +80,33 @@ app.post("/api/shorturl/new", (req, res) => {
         
         // if doc DOESN'T exist in db
         // count total documents. Increment by 1 to create short_url
-        let count = 0;
+        let shortUrlNumber = 0;
         let totalUrls = Url.countDocuments({'short_url': {$gt:0}}, (err, data) => {
-          count = data + 1;
+          shortUrlNumber = data + 1;
           
           // create new document in MongoDB
           let longUrl = new Url({
             original_url: originalUrl,
-            short_url: count
+            short_url: shortUrlNumber
           });
           longUrl
             .save()
             .then(result => {  
               res.json({
                 original_url: originalUrl,
-                short_url: count
+                short_url: shortUrlNumber
               });
             })
             .catch(err => {
-              console.log("Add URL to MongoDB " + err);
+              console.log("Add URL to MongoDB: " + err);
             }); 
-          }).catch(err => {
-          console.log("totalUrls " + err);
           });
-        }).catch(err => {
-          console.log("Check if URL exists " + err);
         });
-
-    })
+    });
     // invalid URL input in form
   } else {
     res.json({error: "invalid URL"});
   }
-  
-
- 
 });
 
 app.listen(port);
