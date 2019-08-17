@@ -109,4 +109,12 @@ app.post("/api/shorturl/new", (req, res) => {
   }
 });
 
+// GET => shortcode from url => query mongodb => redirect to website
+app.get("/api/shorturl/:shorturl", (req, res) => {
+  let shortUrlCode = req.params.shorturl;
+  Url.findOne({'short_url': shortUrlCode}, (err, data) => {
+    res.redirect(data.original_url);
+  });
+});
+
 app.listen(port);
